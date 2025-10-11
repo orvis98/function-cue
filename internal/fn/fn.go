@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
@@ -221,20 +222,36 @@ func (f *Cue) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (outR
 	default:
 		responseVar = in.ResponseVar
 	}
-	state, err := f.Eval(req, in.Script, EvalOptions{
-		RequestVar:          requestVar,
-		ResponseVar:         responseVar,
-		DesiredOnlyResponse: in.LegacyDesiredOnlyResponse,
-		Debug: DebugOptions{
-			Enabled: f.debug || in.Debug || debugThis,
-			Raw:     in.DebugRaw,
-			Script:  in.DebugScript,
-		},
-	})
-	if err != nil {
-		return res, errors.Wrap(err, "eval script")
+	if in.AsModule {
+		tmpDir, err := os.MkdirTemp("", "function-cue-*")
+		if err != nil {
+			return nil, err
+		}
+		cfg, err := f.NewConfig(tmpDir, in.Script, "", "", "", requestVar, in.DebugScript)
+		if err != nil {
+			return nil, err
+		}
+		state, err := f.Evaluate(req, cfg, requestVar, responseVar)
+		if err != nil {
+			return res, errors.Wrap(err, "eval script")
+		}
+		return f.mergeResponse(res, state)
+	} else {
+		state, err := f.Eval(req, in.Script, EvalOptions{
+			RequestVar:          requestVar,
+			ResponseVar:         responseVar,
+			DesiredOnlyResponse: in.LegacyDesiredOnlyResponse,
+			Debug: DebugOptions{
+				Enabled: f.debug || in.Debug || debugThis,
+				Raw:     in.DebugRaw,
+				Script:  in.DebugScript,
+			},
+		})
+		if err != nil {
+			return res, errors.Wrap(err, "eval script")
+		}
+		return f.mergeResponse(res, state)
 	}
-	return f.mergeResponse(res, state)
 }
 
 func (f *Cue) mergeResponse(res *fnv1.RunFunctionResponse, cueResponse *fnv1.RunFunctionResponse) (*fnv1.RunFunctionResponse, error) {

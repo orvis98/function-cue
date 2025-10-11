@@ -281,3 +281,37 @@ response: desired: resources: main: resource: {
 	blanksRemoved := strings.ReplaceAll(string(b), " ", "")
 	assert.Equal(t, `{"meta":{"tag":"v1","ttl":"60s"},"desired":{"resources":{"main":{"resource":{"bar":"baz","foo":"bar"}}}},"results":[{"severity":"SEVERITY_NORMAL","message":"cuemoduleexecutedsuccessfully","target":"TARGET_COMPOSITE"}]}`, blanksRemoved)
 }
+
+func TestRunFunctionAsModule(t *testing.T) {
+	req := makeRequest(t)
+	script := `
+package runtime
+#request: {...}
+response: desired: resources: main: resource: {
+	foo: #request.observed.composite.resource.foo
+	bar: "baz"
+}
+`
+	in := input.CueInput{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1Aplha1", Kind: "Function"},
+		ObjectMeta: metav1.ObjectMeta{Name: "foobar"},
+		Script:     script,
+		AsModule:   true,
+		Debug:      true,
+	}
+	b, err := json.Marshal(in)
+	require.NoError(t, err)
+	var untyped structpb.Struct
+	err = protojson.Unmarshal(b, &untyped)
+	require.NoError(t, err)
+	req.Input = &untyped
+
+	f, err := New(Options{Debug: true})
+	require.NoError(t, err)
+	res, err := f.RunFunction(context.Background(), req)
+	require.NoError(t, err)
+	b, err = protojson.Marshal(res)
+	require.NoError(t, err)
+	blanksRemoved := strings.ReplaceAll(string(b), " ", "")
+	assert.Equal(t, `{"meta":{"tag":"v1","ttl":"60s"},"desired":{},"results":[{"severity":"SEVERITY_NORMAL","message":"cuemoduleexecutedsuccessfully","target":"TARGET_COMPOSITE"}]}`, blanksRemoved)
+}

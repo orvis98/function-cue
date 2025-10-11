@@ -51,6 +51,18 @@ type CueInput struct {
 	// Script specifies an inline script
 	// +optional
 	Script string `json:"script,omitempty"`
+	// AsModule specifies if the script should be evaluated in a CUE module
+	// +optional
+	AsModule bool `json:"asModule,omitempty"`
+	// ModuleCue specifies the contents of the cue.mod/module.cue file
+	// +optional
+	ModuleCue string `json:"moduleCue,omitempty"`
+	// ModuleCacheDir specifies the CUE module cache directory
+	// +optional
+	ModuleCacheDir string `json:"moduleCacheDir,omitempty"`
+	// ModuleRegistry specifies the CUE registry to use
+	// +optional
+	ModuleRegistry string `json:"moduleRegistry,omitempty"`
 	// RequestVar is the variable name that the function will use to provide inputs to the
 	// cue script. Defaults to "#request"
 	RequestVar string `json:"requestVar,omitempty"`
