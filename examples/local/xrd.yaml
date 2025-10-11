@@ -1,19 +1,19 @@
 ---
-apiVersion: apiextensions.crossplane.io/v2
+apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
   name: xrs.example.crossplane.io
 spec:
-  scope: Namespaced
   group: example.crossplane.io
   names:
     kind: XR
     plural: xrs
+  scope: Namespaced
   versions:
   - name: v1
     referenceable: true
-    served: true
     schema:
       openAPIV3Schema:
-        type: object
         properties: {}
+        type: object
+    served: true

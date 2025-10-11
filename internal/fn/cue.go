@@ -37,14 +37,14 @@ language: version: "v0.12.0"`
 	if err := os.Setenv("CUE_REGISTRY", registry); err != nil {
 		return nil, err
 	}
-	if err := os.MkdirAll(filepath.Join(dir, "cue.mod"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(dir, "cue.mod"), 0o755); err != nil {
 		return nil, err
 	}
-	if err := os.WriteFile(filepath.Join(dir, "cue.mod/module.cue"), []byte(moduleCue), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "cue.mod/module.cue"), []byte(moduleCue), 0o644); err != nil {
 		return nil, err
 	}
 	finalScript := fmt.Sprintf("%s\n%s: _", script, requestVar)
-	if err := os.WriteFile(filepath.Join(dir, "script.cue"), []byte(finalScript), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "script.cue"), []byte(finalScript), 0o644); err != nil {
 		return nil, err
 	}
 
