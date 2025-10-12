@@ -15,13 +15,31 @@ spec:
     input:
       apiVersion: template.fn.crossplane.io/v1beta1
       kind: Input
+      debug: true
+      asModule: true
+      moduleCue: |
+        module: "cue.example"
+        language: {
+          version: "v0.12.0"
+        }
+        deps: {
+          "cue.dev/x/k8s.io@v0": {
+            v:       "v0.5.0"
+            default: true
+          }
+        }
       script: |
         package main
+        import (
+          corev1 "cue.dev/x/k8s.io/api/core/v1"
+        )
         composite: #request.observed.composite.resource
         response: desired: resources: {
-          configMap: resource: {
-            apiVersion: "v1"
-            kind: "ConfigMap"
+          configMap: resource: corev1.#ConfigMap & {
+            metadata: {
+              name: "foo"
+              namespace: "default"
+            }
             data: compositeName: composite.metadata.name
           }
         }

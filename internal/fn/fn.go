@@ -224,10 +224,11 @@ func (f *Cue) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (outR
 	}
 	if in.AsModule {
 		tmpDir, err := os.MkdirTemp("", "function-cue-*")
+		defer os.RemoveAll(tmpDir)
 		if err != nil {
 			return nil, err
 		}
-		cfg, err := f.NewConfig(tmpDir, in.Script, "", "", "", requestVar, in.DebugScript)
+		cfg, err := f.NewConfig(tmpDir, in.Script, in.ModuleCue, in.ModuleCacheDir, in.ModuleRegistry, requestVar, in.DebugScript)
 		if err != nil {
 			return nil, err
 		}

@@ -19,9 +19,29 @@ metadata:
 status:
   conditions:
   - lastTransitionTime: "2024-01-01T00:00:00Z"
-    reason: Available
-    status: "True"
+    message: 'Unready resources: configMap'
+    reason: Creating
+    status: "False"
     type: Ready
+---
+apiVersion: v1
+data:
+  compositeName: example-xr
+kind: ConfigMap
+metadata:
+  annotations:
+    crossplane.io/composition-resource-name: configMap
+  labels:
+    crossplane.io/composite: example-xr
+  name: foo
+  namespace: default
+  ownerReferences:
+  - apiVersion: example.crossplane.io/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: XR
+    name: example-xr
+    uid: ""
 ---
 apiVersion: render.crossplane.io/v1beta1
 kind: Result
@@ -48,16 +68,18 @@ spec:
     input:
       apiVersion: template.fn.crossplane.io/v1beta1
       kind: Input
+      debug: true
+      asModule: true
       cueMod: |
         module: "cue.example"
         language: {
-                version: "v0.14.2"
+          version: "v0.12.0"
         }
         deps: {
-                "cue.dev/x/k8s.io@v0": {
-                        v:       "v0.5.0"
-                        default: true
-                }
+          "cue.dev/x/k8s.io@v0": {
+            v:       "v0.5.0"
+            default: true
+          }
         }
       script: |
         package main

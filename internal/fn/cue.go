@@ -16,8 +16,7 @@ import (
 func (f *Cue) NewConfig(dir string, script string, moduleCue string, cacheDir string, registry string, requestVar string, debug bool) (*load.Config, error) {
 	// set up variables
 	if moduleCue == "" {
-		moduleCue = `
-module: "cue.example"
+		moduleCue = `module: "cue.example"
 language: version: "v0.12.0"`
 	}
 	if cacheDir == "" {
@@ -63,7 +62,7 @@ func (f *Cue) Evaluate(req *fnv1.RunFunctionRequest, config *load.Config, reques
 		return nil, errors.New("no CUE instances found")
 	}
 	runtime := cuecontext.New()
-	val := runtime.BuildInstance(insts[0]).FillPath(cue.ParsePath(requestVar), req)
+	val := runtime.BuildInstance(insts[0]).FillPath(cue.ParsePath(requestVar), req).LookupPath(cue.ParsePath(responseVar))
 	if val.Err() != nil {
 		return nil, errors.Wrap(val.Err(), "compile cue code")
 	}
